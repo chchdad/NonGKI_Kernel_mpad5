@@ -109,23 +109,31 @@ jobs:
       - name: ⚙️ Get neccssary tools
         uses: ./.github/workflows/build-ready
 
-      # ================== 最终修复版：提取完整的修补前源代码 ==================
-      - name: 📦 提取完整的修补前源代码 (Full Pre-patch Source)
+      # ================== 终极方案：将纯净源码推送到仓库新分支 ==================
+      - name: 🚀 将纯净源码推送到新分支 (供本地 Git Clone)
         run: |
-          cd $GITHUB_WORKSPACE
-          echo "==== 正在打包完整的打补丁前内核源码 ===="
+          cd $GITHUB_WORKSPACE/device_kernel
+          echo "==== 正在启动 Git 魔法，准备推送纯净源码 ===="
           
-          # 使用 tar 格式打包。这不仅能避免二次 zip 导致的损坏，
-          # 还能完美保留设备底层驱动的所有权限和符号链接，为本地编译铺平道路。
-          tar -czf Full_PrePatch_Source.tar.gz device_kernel/
+          # 配置云端机器人的 Git 身份
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "action@github.com"
           
-      - name: 📤 上传完整修补前源码到云端
-        uses: actions/upload-artifact@v4
-        with:
-          # 修改 Artifact 名称以区分，避免与之前混淆
-          name: Full_PrePatch_Source_Artifact
-          path: Full_PrePatch_Source.tar.gz
-      # ======================================================================
+          # 在当前纯净的源码状态下，新建并切换到一个名为 pure-source 的独立分支
+          git checkout -b pure-source
+          
+          # 确保所有文件都在暂存区并提交（记录当前纯净状态）
+          git add .
+          git commit -m "Auto-backup: 纯净版内核源码 (打补丁前)" || true
+          
+          # 核心操作：利用 GitHub Action 自带的 Token，将源码推送到你运行该工作流的仓库中！
+          git remote add action_repo "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          
+          echo "==== 正在强行推送到 pure-source 分支 ===="
+          git push action_repo pure-source --force
+          echo "✅ 推送完成！源码已永久存放在 pure-source 分支！"
+      # ==========================================================================
+
 
 
 
