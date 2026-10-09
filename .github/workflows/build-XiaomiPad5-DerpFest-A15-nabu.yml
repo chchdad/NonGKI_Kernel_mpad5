@@ -115,25 +115,28 @@ jobs:
           cd $GITHUB_WORKSPACE/device_kernel
           echo "==== 正在启动 Git 魔法，准备推送纯净源码 ===="
           
+          # 🚨 核心修复：清理所有嵌套的 .git 文件夹，防止变成空壳子模块！
+          find . -mindepth 2 -name ".git" -type d -exec rm -rf {} +
+          echo "✅ 嵌套子模块已全部降维打击完毕！"
+          
           # 配置云端机器人的 Git 身份
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "action@github.com"
           
-          # 在当前纯净的源码状态下，新建并切换到一个名为 pure-source 的独立分支
+          # 新建并切换到独立分支
           git checkout -b pure-source
           
-          # 确保所有文件都在暂存区并提交（记录当前纯净状态）
+          # 添加并提交（此时嵌套的 .git 已被删除，将被当成真实的普通源码文件完整提交）
           git add .
           git commit -m "Auto-backup: 纯净版内核源码 (打补丁前)" || true
           
-          # 核心操作：利用 GitHub Action 自带的 Token，将源码推送到你运行该工作流的仓库中！
+          # 核心操作：利用 Token 进行强推
           git remote add action_repo "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
           
           echo "==== 正在强行推送到 pure-source 分支 ===="
           git push action_repo pure-source --force
-          echo "✅ 推送完成！源码已永久存放在 pure-source 分支！"
+          echo "✅ 推送完成！现在去 Droidspaces 里执行 git clone 吧！"
       # ==========================================================================
-
 
 
 
