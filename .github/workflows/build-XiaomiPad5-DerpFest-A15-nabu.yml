@@ -109,6 +109,28 @@ jobs:
       - name: ⚙️ Get neccssary tools
         uses: ./.github/workflows/build-ready
 
+     # ================== 新增：提取修补前源代码 ==================
+      - name: 📦 提取修补前源代码 (Pre-patch Source)
+        run: |
+          cd $GITHUB_WORKSPACE
+          echo "==== 正在备份打补丁前的原始内核源码 ===="
+          mkdir -p PrePatch_Source
+          
+          # 提取核心目录（包含文件系统、安全策略、输入驱动及内核级SU），用于与后续打孔代码进行比对
+          cp -r device_kernel/fs PrePatch_Source/ || true
+          cp -r device_kernel/security PrePatch_Source/ || true
+          cp -r device_kernel/drivers/input PrePatch_Source/ || true
+          cp -r device_kernel/drivers/kernelsu PrePatch_Source/ || true
+          
+          cd PrePatch_Source
+          zip -r ../PrePatch_Source.zip .
+          
+      - name: 📤 上传修补前源码到云端
+        uses: actions/upload-artifact@v4
+        with:
+          name: PrePatch_Source_Files
+          path: PrePatch_Source.zip
+
       - name: ⏪ 物理时光机：精准回溯 3 号提交
         shell: bash
         run: |
