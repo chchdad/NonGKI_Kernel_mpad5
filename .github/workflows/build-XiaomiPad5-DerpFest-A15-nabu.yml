@@ -119,18 +119,17 @@ jobs:
           tar -czf pure_kernel_source.tar.gz device_kernel/
           
           echo "==== 正在拉取免安装版 gh 工具 ===="
-          # 直接下载官方绿色版二进制文件并解压到临时目录，彻底绕过系统环境限制
           wget -qO- https://github.com/cli/cli/releases/download/v2.45.0/gh_2.45.0_linux_amd64.tar.gz | tar -xz -C /tmp
           
-          # 自动定位这个二进制程序的路径并赋予执行权限
           GH_EXEC=$(find /tmp -name "gh" -type f -path "*/bin/*" | head -n 1)
           chmod +x $GH_EXEC
           
           echo "==== 正在将源码推送到仓库的 Releases 页面 ===="
           TAG_NAME="pure-source-$(date +'%Y%m%d-%H%M%S')"
           
-          # 直接调用刚才下载的绿色版程序来创建 Release
+          # 🚨 核心修复：强行指定目标仓库，彻底瘫痪它的本地 Git 检测机制
           $GH_EXEC release create "$TAG_NAME" pure_kernel_source.tar.gz \
+            --repo ${{ github.repository }} \
             --title "纯净内核源码 (打补丁前) $TAG_NAME" \
             --notes "专为本地 Droidspaces 编译准备。已保留所有 Linux 权限。"
           
