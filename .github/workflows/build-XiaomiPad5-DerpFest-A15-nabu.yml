@@ -109,27 +109,23 @@ jobs:
       - name: ⚙️ Get neccssary tools
         uses: ./.github/workflows/build-ready
 
-     # ================== 新增：提取修补前源代码 ==================
-      - name: 📦 提取修补前源代码 (Pre-patch Source)
+           # ================== 修改版：提取完整的修补前源代码 (用于本地 Droidspaces 编译) ==================
+      - name: 📦 提取完整的修补前源代码 (Full Pre-patch Source)
         run: |
           cd $GITHUB_WORKSPACE
-          echo "==== 正在备份打补丁前的原始内核源码 ===="
-          mkdir -p PrePatch_Source
+          echo "==== 正在打包完整的打补丁前内核源码 ===="
           
-          # 提取核心目录（包含文件系统、安全策略、输入驱动及内核级SU），用于与后续打孔代码进行比对
-          cp -r device_kernel/fs PrePatch_Source/ || true
-          cp -r device_kernel/security PrePatch_Source/ || true
-          cp -r device_kernel/drivers/input PrePatch_Source/ || true
-          cp -r device_kernel/drivers/kernelsu PrePatch_Source/ || true
+          # 直接将整个纯净的 device_kernel 根目录全部打包
+          # 注意：这包含了 arch, drivers, kernel, net 等所有完整结构
+          zip -r Full_PrePatch_Source.zip device_kernel/
           
-          cd PrePatch_Source
-          zip -r ../PrePatch_Source.zip .
-          
-      - name: 📤 上传修补前源码到云端
+      - name: 📤 上传完整修补前源码到云端
         uses: actions/upload-artifact@v4
         with:
-          name: PrePatch_Source_Files
-          path: PrePatch_Source.zip
+          name: Full_PrePatch_Source_Files
+          path: Full_PrePatch_Source.zip
+      # ==========================================================
+
 
       - name: ⏪ 物理时光机：精准回溯 3 号提交
         shell: bash
