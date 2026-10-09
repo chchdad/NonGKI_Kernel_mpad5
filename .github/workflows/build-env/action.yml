@@ -41,6 +41,19 @@ runs:
         run: |
           . /etc/os-release
 
+          # ================== 新增容器兼容修复 ==================
+          # 自动检测是否缺失 sudo（典型容器特征），如果是 root 则自动补全
+          if ! command -v sudo &> /dev/null; then
+              echo "⚠️ 检测到当前环境缺失 sudo，正在自动安装..."
+              if [ "$ID" = "ubuntu" ] || [ "$ID" = "debian" ]; then
+                  apt-get update -y && apt-get install sudo -y
+              elif [ "$ID" = "arch" ]; then
+                  pacman -Sy --noconfirm sudo
+              fi
+              echo "✅ sudo 安装完成！"
+          fi
+          # ======================================================
+
           if [ "$ID" = "ubuntu" ]; then
               if [ "$VERSION_ID" = "20.04" ]; then
                   echo "SYSTEM_VERSION=oldest" >> $GITHUB_ENV
@@ -58,6 +71,7 @@ runs:
               echo "❌ Not Supported: $PRETTY_NAME"
               false
           fi
+
 
       - name: Remove useless tools
         if: env.SYSTEM_VERSION == 'newer' || env.SYSTEM_VERSION == 'older'
