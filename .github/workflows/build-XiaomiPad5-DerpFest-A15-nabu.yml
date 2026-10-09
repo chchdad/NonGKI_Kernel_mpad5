@@ -109,35 +109,28 @@ jobs:
       - name: ⚙️ Get neccssary tools
         uses: ./.github/workflows/build-ready
 
-      # ================== 终极方案：将纯净源码推送到仓库新分支 ==================
-      - name: 🚀 将纯净源码推送到新分支 (供本地 Git Clone)
+      # ================== 终极完美方案：利用 GitHub Release 分发纯净源码 ==================
+      - name: 📦 打包并发布纯净源码到 Release (供本地直连下载)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd $GITHUB_WORKSPACE/device_kernel
-          echo "==== 正在启动 Git 魔法，准备推送纯净源码 ===="
+          cd $GITHUB_WORKSPACE
+          echo "==== 正在打包纯净内核源码 ===="
           
-          # 🚨 核心修复：清理所有嵌套的 .git 文件夹，防止变成空壳子模块！
-          find . -mindepth 2 -name ".git" -type d -exec rm -rf {} +
-          echo "✅ 嵌套子模块已全部降维打击完毕！"
+          # 使用 tar 打包，保留所有软链接和可执行权限
+          tar -czf pure_kernel_source.tar.gz device_kernel/
           
-          # 配置云端机器人的 Git 身份
-          git config --global user.name "GitHub Action Bot"
-          git config --global user.email "action@github.com"
+          echo "==== 正在将源码推送到仓库的 Releases 页面 ===="
+          # 生成一个基于时间戳的唯一标签，防止覆盖报错
+          TAG_NAME="pure-source-$(date +'%Y%m%d-%H%M%S')"
           
-          # 新建并切换到独立分支
-          git checkout -b pure-source
+          # 使用 GitHub 官方 CLI 创建 Release 并静默上传压缩包
+          gh release create "$TAG_NAME" pure_kernel_source.tar.gz \
+            --title "纯净内核源码 (打补丁前) $TAG_NAME" \
+            --notes "专为本地 Droidspaces 编译准备。已保留所有 Linux 权限。"
           
-          # 添加并提交（此时嵌套的 .git 已被删除，将被当成真实的普通源码文件完整提交）
-          git add .
-          git commit -m "Auto-backup: 纯净版内核源码 (打补丁前)" || true
-          
-          # 核心操作：利用 Token 进行强推
-          git remote add action_repo "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
-          
-          echo "==== 正在强行推送到 pure-source 分支 ===="
-          git push action_repo pure-source --force
-          echo "✅ 推送完成！现在去 Droidspaces 里执行 git clone 吧！"
-      # ==========================================================================
-
+          echo "✅ 发布成功！源码已作为 Release 资产永久保存！"
+      # ====================================================================================
 
 
       - name: ⏪ 物理时光机：精准回溯 3 号提交
