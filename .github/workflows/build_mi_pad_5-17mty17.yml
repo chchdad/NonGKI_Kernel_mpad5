@@ -136,27 +136,7 @@ jobs:
           echo "✅ 发布成功！源码已作为 Release 资产永久保存！"
       # ====================================================================================
 
-      - name: ⏪ 物理时光机：精准回溯 3 号提交
-        shell: bash
-        run: |
-          echo "==== 启动 Git 级时光机，直接回退 ===="
-          
-          # 精准定位 SukiSU 源码根目录
-          KSU_DIR=$(find $GITHUB_WORKSPACE -type d \( -name "KernelSU" -o -name "kernelsu" \) -not -path "*/out/*" | head -n 1)
-          
-          if [ -n "$KSU_DIR" ]; then
-              echo "🔍 成功锁定 SukiSU 大本营: $KSU_DIR"
-              cd "$KSU_DIR"
-              
-              # 🚨 核心指令：直接硬重置到 3 月 2 日的最后一个正常提交 (c1fd51c)
-              # 这行命令会瞬间抹除 3 号当天的所有提交记录和毒代码，干干净净！
-              git reset --hard c1fd51c
-              
-              echo "✅ 源码已成功回溯至 3 月 2 日纯净版！"
-          else
-              echo "❌ 致命错误：未找到 SukiSU 源码目录，时光机启动失败！"
-              exit 1
-          fi
+
 
       - name: 🚀 Build Process
         uses: ./.github/workflows/build-process
